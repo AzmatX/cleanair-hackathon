@@ -216,3 +216,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# API Keys - NEVER COMMIT!
+config.js
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
