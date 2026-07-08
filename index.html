@@ -1,132 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CleanAir AI – Hyperlocal Pollution Intelligence</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanAir AI – Hyperlocal Pollution Intelligence</title>
+  <meta name="theme-color" content="#0b2b4a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- Charts (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- DOMPurify for security -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 </head>
 <body>
 
-    <!-- ========== HEADER ========== -->
-    <header>
-        <div class="container">
-            <div class="logo">
-                <span class="logo-icon">🌿</span>
-                <h1>CleanAir AI</h1>
-                <span class="badge">v2.0</span>
-            </div>
-            <p class="tagline">Transforming Every Citizen into an Environmental Sensor</p>
-            <div class="stats-bar">
-                <div><span id="total-reports">0</span> Reports</div>
-                <div><span id="active-hotspots">0</span> Active Hotspots</div>
-                <div><span id="avg-aqi">--</span> Avg AQI</div>
-            </div>
+  <!-- ===== TOAST CONTAINER ===== -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header id="main-header">
+    <div class="container">
+      <div class="header-top">
+        <div class="logo">
+          <span class="logo-icon">🌿</span>
+          <h1>CleanAir AI</h1>
+          <span class="badge">v3.0</span>
+          <span class="badge beta">⚡ AI-Powered</span>
         </div>
-    </header>
-
-    <!-- ========== MAIN ========== -->
-    <main class="container">
-
-        <!-- ====== REPORT FORM ====== -->
-        <section id="report-section" class="card">
-            <h2>📸 Report Pollution</h2>
-            <p class="subtitle">Upload a photo and location to help us detect and fix pollution hotspots</p>
-            <form id="report-form">
-                <div class="form-group">
-                    <label for="photo-input">Upload Photo</label>
-                    <input type="file" id="photo-input" accept="image/*" capture="environment" required />
-                </div>
-                <div class="form-group">
-                    <label for="location-input">📍 Location</label>
-                    <input type="text" id="location-input" placeholder="e.g., Okhla, Delhi" required />
-                    <button type="button" id="use-location-btn" class="btn-secondary">Use My Location</button>
-                </div>
-                <button type="submit" id="submit-btn" class="btn-primary">🔍 Analyze with Gemini AI</button>
-            </form>
-            <div id="analysis-result" style="display:none;"></div>
-        </section>
-
-        <!-- ====== DASHBOARD ====== -->
-        <section id="dashboard" class="card">
-            <h2>📊 Municipal Decision Dashboard</h2>
-            <div id="dashboard-grid">
-                <!-- Populated by JS -->
-            </div>
-        </section>
-
-        <!-- ====== MAP + ALERTS SPLIT ====== -->
-        <div class="grid-2">
-            <!-- MAP -->
-            <section id="map-section" class="card">
-                <h2>🗺️ Live Pollution Map</h2>
-                <div id="map"></div>
-                <div class="map-controls">
-                    <button id="toggle-heatmap" class="btn-secondary">Toggle Heatmap</button>
-                    <div class="legend">
-                        <span><span class="dot red"></span> High</span>
-                        <span><span class="dot yellow"></span> Moderate</span>
-                        <span><span class="dot green"></span> Low</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ALERTS -->
-            <section id="alerts-section" class="card">
-                <h2>🚨 Real-time Alerts</h2>
-                <div id="alerts-list">
-                    <p class="empty-state">No alerts yet. Be the first to report!</p>
-                </div>
-            </section>
+        <div class="header-actions">
+          <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme"><span class="theme-icon">🌙</span></button>
+          <button id="voice-btn" class="icon-btn" aria-label="Voice input"><span>🎤</span></button>
+          <button id="export-btn" class="icon-btn" aria-label="Export data"><span>📊</span></button>
+          <button id="auth-btn" class="btn-secondary">Sign In</button>
         </div>
+      </div>
+      <p class="tagline">Transforming Every Citizen into an Environmental Sensor</p>
+      <div class="stats-bar">
+        <div><span id="total-reports">0</span> Reports</div>
+        <div><span id="active-hotspots">0</span> Active Hotspots</div>
+        <div><span id="avg-aqi">--</span> Avg AQI</div>
+        <div><span id="coverage-area">--</span> Coverage</div>
+      </div>
+    </div>
+  </header>
 
-        <!-- ====== PREDICTION ====== -->
-        <section id="prediction-section" class="card">
-            <h2>📈 24-Hour AQI Forecast</h2>
-            <div id="prediction-grid">
-                <div class="prediction-card">
-                    <span class="label">Current AQI</span>
-                    <span id="current-aqi" class="value">--</span>
-                </div>
-                <div class="prediction-card">
-                    <span class="label">Predicted AQI (24h)</span>
-                    <span id="predicted-aqi" class="value">--</span>
-                </div>
-                <div class="prediction-card">
-                    <span class="label">Status</span>
-                    <span id="aqi-status" class="value">--</span>
-                </div>
-                <div class="prediction-card">
-                    <span class="label">Confidence</span>
-                    <span id="confidence" class="value">--</span>
-                </div>
-            </div>
-        </section>
+  <!-- ===== MAIN ===== -->
+  <main class="container">
 
-    </main>
+    <!-- Report Section -->
+    <section id="report-section" class="card glass">
+      <div class="card-header">
+        <h2>📸 Report Pollution</h2>
+        <span class="card-badge">New</span>
+      </div>
+      <p class="subtitle">Upload a photo and location – AI will analyse and suggest action.</p>
 
-    <!-- ========== FOOTER ========== -->
-    <footer>
-        <div class="container">
-            <p>🌿 CleanAir AI — Built for <strong>Build with AI Hackathon 2026</strong> · Track 2: Clean Air & Clean Streets</p>
-            <p>Every citizen is a sensor. Every report saves lives.</p>
+      <!-- Drop Zone -->
+      <div id="drop-zone" class="drop-zone">
+        <div class="drop-zone-content">
+          <span class="drop-icon">📤</span>
+          <p>Drag & drop your photo here, or click to browse</p>
+          <span class="drop-hint">Supports JPG, PNG, WEBP (max 10MB)</span>
         </div>
-    </footer>
+        <input type="file" id="photo-input" accept="image/*" capture="environment" />
+      </div>
+      <div id="image-preview" style="display:none;">
+        <img id="preview-img" alt="Preview" />
+        <button id="remove-preview" class="btn-icon">✕</button>
+      </div>
 
-    <!-- ========== SCRIPTS ========== -->
-    <!-- Google Maps API with Heatmap library -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=visualization&callback=initMap" async defer></script>
+      <form id="report-form">
+        <div class="form-group">
+          <label for="location-input">📍 Location</label>
+          <div class="location-input-group">
+            <input type="text" id="location-input" placeholder="e.g., Okhla, Delhi" required />
+            <button type="button" id="use-location-btn" class="btn-secondary">📍 Use My Location</button>
+            <button type="button" id="voice-location-btn" class="btn-secondary">🎤 Voice</button>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" id="submit-btn" class="btn-primary">🔍 Analyze with Gemini AI</button>
+          <button type="reset" id="reset-btn" class="btn-secondary">Clear</button>
+        </div>
+      </form>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+      <div id="analysis-result" style="display:none;"></div>
+      <div id="analysis-loading" style="display:none;">
+        <div class="spinner"></div>
+        <p>🧠 Gemini AI is analysing the image...</p>
+      </div>
+    </section>
 
-    <!-- Config (API keys) - CREATE THIS FILE -->
-    <script src="config.js"></script>
+    <!-- Dashboard -->
+    <section id="dashboard" class="card glass">
+      <div class="card-header">
+        <h2>📊 Municipal Decision Dashboard</h2>
+        <div class="filter-group">
+          <select id="dashboard-filter" class="filter-select">
+            <option value="all">All Areas</option>
+            <option value="hotspot">Hotspots Only</option>
+            <option value="critical">Critical (Severity > 7)</option>
+          </select>
+        </div>
+      </div>
+      <div id="dashboard-grid"></div>
+      <div id="dashboard-charts" class="charts-row">
+        <div class="chart-box"><canvas id="aqiTrendChart"></canvas></div>
+        <div class="chart-box"><canvas id="severityChart"></canvas></div>
+      </div>
+    </section>
 
-    <!-- Main Script -->
-    <script src="script.js"></script>
+    <!-- Map + Alerts -->
+    <div class="grid-2">
+      <section id="map-section" class="card glass">
+        <div class="card-header">
+          <h2>🗺️ Live Pollution Map</h2>
+          <span class="card-badge" id="map-status">🟢 Live</span>
+        </div>
+        <div id="map"></div>
+        <div class="map-controls">
+          <button id="toggle-heatmap" class="btn-secondary">🌡️ Toggle Heatmap</button>
+          <button id="toggle-clustering" class="btn-secondary">📌 Toggle Clustering</button>
+          <button id="reset-map" class="btn-secondary">🔄 Reset View</button>
+          <div class="legend">
+            <span><span class="dot red"></span> High</span>
+            <span><span class="dot yellow"></span> Moderate</span>
+            <span><span class="dot green"></span> Low</span>
+          </div>
+        </div>
+      </section>
 
+      <section id="alerts-section" class="card glass">
+        <div class="card-header">
+          <h2>🚨 Real-time Alerts</h2>
+          <span class="card-badge" id="alert-count">0</span>
+        </div>
+        <div id="alerts-list">
+          <p class="empty-state">No alerts yet. Be the first to report!</p>
+        </div>
+        <div class="alerts-actions">
+          <button id="clear-alerts" class="btn-secondary btn-sm">Clear All</button>
+          <button id="export-alerts" class="btn-secondary btn-sm">📥 Export</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Prediction -->
+    <section id="prediction-section" class="card glass">
+      <div class="card-header">
+        <h2>📈 24‑Hour AQI Forecast</h2>
+        <span class="card-badge" id="forecast-updated">Updated just now</span>
+      </div>
+      <div id="prediction-grid">
+        <div class="prediction-card">
+          <span class="label">Current AQI</span>
+          <span id="current-aqi" class="value">--</span>
+          <span class="sub-label" id="current-aqi-label">--</span>
+        </div>
+        <div class="prediction-card">
+          <span class="label">Predicted AQI (24h)</span>
+          <span id="predicted-aqi" class="value">--</span>
+          <span class="sub-label" id="predicted-aqi-label">--</span>
+        </div>
+        <div class="prediction-card">
+          <span class="label">Status</span>
+          <span id="aqi-status" class="value">--</span>
+          <span class="sub-label" id="aqi-status-desc">--</span>
+        </div>
+        <div class="prediction-card">
+          <span class="label">Confidence</span>
+          <span id="confidence" class="value">--</span>
+          <span class="sub-label">Based on <span id="sample-count">0</span> reports</span>
+        </div>
+      </div>
+      <div id="forecast-chart-container">
+        <canvas id="forecastChart"></canvas>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section id="history-section" class="card glass">
+      <div class="card-header">
+        <h2>📋 Report History</h2>
+        <div class="filter-group">
+          <select id="history-filter" class="filter-select">
+            <option value="all">All Types</option>
+            <option value="Smoke">🔥 Smoke</option>
+            <option value="Dust">💨 Dust</option>
+            <option value="Garbage">🗑️ Garbage</option>
+            <option value="Construction">🏗️ Construction</option>
+            <option value="Industrial">🏭 Industrial</option>
+            <option value="Clean">✅ Clean</option>
+          </select>
+        </div>
+      </div>
+      <div id="history-list"><p class="empty-state">No reports yet.</p></div>
+      <div class="history-actions">
+        <button id="load-more" class="btn-secondary btn-sm">Load More</button>
+        <span id="history-count" class="history-count">Showing 0 reports</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div class="container">
+      <p>🌿 CleanAir AI — Built for <strong>Build with AI Hackathon 2026</strong> · Track 2: Clean Air & Clean Streets</p>
+      <p>Every citizen is a sensor. Every report saves lives. <span id="footer-version">v3.0</span></p>
+      <div class="footer-links">
+        <a href="#" id="privacy-link">Privacy Policy</a>
+        <a href="#" id="terms-link">Terms of Service</a>
+        <a href="#" id="feedback-link">💬 Feedback</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== SCRIPTS (ES Modules) ===== -->
+  <!-- Google Maps (loads async) -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=visualization,places&callback=initMap" async defer>
+  </script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  <!-- MarkerClustererPlus -->
+  <script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclustererplus@1.0.3/dist/markerclustererplus.min.js">
+  </script>
+
+  <!-- Main application (type="module") -->
+  <script type="module" src="src/app.js"></script>
 </body>
 </html>
